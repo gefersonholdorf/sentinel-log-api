@@ -1,0 +1,63 @@
+services:
+  # api:
+  #   build: ./api
+  #   container_name: sentinellog_api
+  #   restart: always
+  #   environment:
+  #     RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+  #     MONGO_URL: mongodb://mongo:27017/sentinellog
+  #     PORT: 3000
+  #   depends_on:
+  #     - rabbitmq
+  #     - mongo
+  #   ports:
+  #     - "3000:3000"
+
+  # worker:
+  #   build: ./worker
+  #   container_name: sl_worker
+  #   restart: always
+  #   environment:
+  #     RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+  #     MONGO_URL: mongodb://mongo:27017/sentinellog
+  #   depends_on:
+  #     - rabbitmq
+  #     - mongo
+
+  mongo:
+    image: mongo:7
+    container_name: sl_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.0-20-alpine3.18
+    container_name: sl_mongo_express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: sl_mongo
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+    depends_on:
+      - mongo
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: sl_rabbit
+    restart: always
+    ports:
+      - "5672:5672"  
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  mongo_data:
+  rabbitmq_data:

@@ -1,125 +1,107 @@
-# SentinelLog — Plataforma Centralizada de Logs
+# SentinelLog — Plataforma Centralizada de Logs de Ações do Usuário
 
-## 📌 Descrição do Sistema
+## 📌 Visão Geral
 
-**SentinelLog** é uma plataforma centralizada para **coleta, processamento, persistência e consulta de logs** provenientes de múltiplas APIs pertencentes a diferentes *personas* (clientes, produtos ou organizações).
+**SentinelLog** é uma **plataforma centralizada de observabilidade**, projetada para **coletar, processar, persistir e consultar logs de ações do usuário** em múltiplas APIs de diferentes personas (clientes, produtos ou organizações).  
 
-O sistema funciona como um **hub de observabilidade leve, escalável e independente**, permitindo que qualquer aplicação integrada envie eventos de forma assíncrona e confiável, sem impacto na performance.
+O sistema atua como um **hub assíncrono e escalável**, permitindo que aplicações integradas enviem eventos de forma confiável sem impactar a performance, garantindo histórico completo, segurança e auditabilidade.
 
-A arquitetura é composta por:
-
-- **Gateway HTTP** para ingestão de logs  
-- **Broker RabbitMQ** para filas duráveis  
+**Arquitetura:**
+- **Gateway HTTP** para ingestão de logs de forma leve e segura  
+- **Broker RabbitMQ** para filas duráveis e tolerantes a falhas  
 - **Worker** de persistência contínua  
-- **Banco NoSQL** para consultas rápidas  
-- **Painel administrativo por persona**, com filtros, gráficos e auditoria  
+- **Banco de dados NoSQL** para consultas rápidas e eficientes  
+- **Painel administrativo por persona**, com dashboards, filtros e auditoria  
 
 ---
 
-## 📌 Problema Principal
+## 📌 Problema a Ser Resolvido
 
-Ambientes com diversas APIs, microserviços ou sistemas independentes sofrem com:
+Ambientes com múltiplas APIs ou microserviços enfrentam desafios significativos:
 
-- dificuldade para centralizar logs;  
-- lentidão ao registrar eventos de forma síncrona;  
-- ausência de histórico consolidado;  
-- falta de segurança no armazenamento de eventos sensíveis;  
-- dificuldade de correlacionar logs por cliente/persona;  
-- risco de perda de dados em quedas de serviço;  
-- falta de auditoria e rastreabilidade.
+- Falta de centralização de logs de ações do usuário;  
+- Lentidão no registro de eventos quando feito de forma síncrona;  
+- Ausência de histórico consolidado para auditoria e análise;  
+- Risco de perda de dados em caso de falhas nos sistemas;  
+- Dificuldade para correlacionar logs por persona ou usuário;  
+- Segurança e isolamento insuficientes entre clientes;  
+- Impacto negativo no diagnóstico de problemas e eficiência operacional.  
 
-Esses problemas resultam em **diagnósticos lentos, indisponibilidade e baixa eficiência operacional**.
+**Consequência:** dificuldade em rastrear ações, realizar auditorias e manter sistemas confiáveis.
 
 ---
 
 ## 📌 Solução Proposta
 
-O **SentinelLog** cria um pipeline assíncrono, resiliente e escalável para tratamento de logs:
+O **SentinelLog** implementa um **pipeline assíncrono e resiliente** para logs de ações do usuário:
 
-1. APIs enviam logs ao **Gateway** (`POST /logs`) usando **token exclusivo da persona**.  
-2. O Gateway valida a persona e a API emissora.  
-3. O log é enviado ao **RabbitMQ** com **persistência garantida**.  
-4. O **Worker** consome e grava os dados no banco NoSQL.  
-5. A **interface administrativa** permite consultas, filtros, gráficos e exportação.
+1. APIs enviam logs ao **Gateway HTTP** (`POST /logs`) com **token exclusivo da persona**;  
+2. O Gateway valida a **persona** e a **API emissora**;  
+3. O log é enviado para o **RabbitMQ** com **persistência garantida**;  
+4. O **Worker** consome a fila e grava os dados de forma segura no banco NoSQL;  
+5. A **interface administrativa** permite consultas detalhadas, filtros avançados, dashboards e exportação de logs.
 
-Essa arquitetura garante:
+**Benefícios:**  
 
-- **zero impacto** nas APIs clientes  
-- **tolerância a falhas** por meio de filas persistentes  
-- **alto throughput**, suportando milhares de eventos/segundo  
-- **isolamento e segurança** entre personas  
+- Registro **assíncrono**, sem impactar as APIs clientes;  
+- **Tolerância a falhas** via filas persistentes;  
+- **Segregação completa** entre personas;  
+- **Alta performance**, suportando milhares de eventos por segundo;  
+- **Segurança e integridade**, garantindo que logs não sejam alterados após persistência.
+
+---
+
+## 📌 Requisitos Funcionais (RF)
+
+| Código | Descrição | Prioridade |
+|--------|-----------|------------|
+| RF01 | Receber logs de ações do usuário via API HTTP (`POST /logs`) | Alta |
+| RF02 | Validar token da persona antes de aceitar o log | Alta |
+| RF03 | Enviar logs para filas persistentes no RabbitMQ | Alta |
+| RF04 | Persistir logs no banco NoSQL de forma confiável | Alta |
+| RF05 | Permitir consulta de logs por filtros avançados (persona, usuário, ação, data, status) | Alta |
+| RF06 | Oferecer dashboards com métricas e gráficos de ações do usuário | Média |
+| RF07 | Permitir exportação de logs para sistemas externos | Média |
+| RF08 | Registrar informações de auditoria (IP, timestamp, origem da API, contexto da ação) | Alta |
+| RF09 | Suportar múltiplos workers e gateways para escalabilidade horizontal | Alta |
+| RF10 | Garantir segregação de dados por persona | Alta |
 
 ---
 
 ## 📌 Requisitos Não Funcionais (RNF)
 
-### **RNF01 — Escalabilidade**
-A ingestão de logs deve suportar crescimento horizontal, com múltiplos gateways e múltiplos workers.  
-**Status:** []  
-**Observações:** []
-
-### **RNF02 — Desempenho**
-A resposta da rota HTTP deve ocorrer em até **< 50ms**, independentemente do processamento posterior.  
-**Status:** []  
-**Observações:** []
-
-### **RNF03 — Tolerância a Falhas**
-As mensagens devem sobreviver a quedas utilizando:  
-- filas duráveis  
-- mensagens persistentes  
-- ACK manual  
-**Status:** []  
-**Observações:** []
-
-### **RNF04 — Segurança**
-- Tokens fortes (JWT ou chave privada).  
-- TLS obrigatório na ingestão.  
-- Isolamento total entre personas.  
-**Status:** []  
-**Observações:** []
-
-### **RNF05 — Integridade**
-Nenhum log pode ser alterado após persistência.  
-**Status:** []  
-**Observações:** []
-
-### **RNF06 — Alta Disponibilidade**
-O sistema deve permitir execução distribuída de múltiplos workers simultâneos.  
-**Status:** []  
-**Observações:** []
-
-### **RNF07 — Armazenamento Não Relacional**
-O banco utilizado deve ser **NoSQL** (MongoDB, DocumentDB, etc.).  
-**Status:** []  
-**Observações:** []
+| Código | Descrição | Observações |
+|--------|-----------|-------------|
+| RNF01 | **Escalabilidade**: Suporte a múltiplos gateways e workers | Crescimento horizontal |
+| RNF02 | **Desempenho**: Resposta HTTP < 50ms | Independente do processamento posterior |
+| RNF03 | **Tolerância a Falhas**: Filas duráveis, mensagens persistentes, ACK manual | Minimizar risco de perda de dados |
+| RNF04 | **Segurança**: Tokens fortes (JWT ou chave privada), TLS obrigatório | Isolamento total entre personas |
+| RNF05 | **Integridade**: Logs imutáveis após persistência | Auditoria confiável |
+| RNF06 | **Alta Disponibilidade**: Workers distribuídos e redundantes | Evitar downtime |
+| RNF07 | **Armazenamento Não Relacional**: Banco NoSQL (MongoDB, DocumentDB, etc.) | Consultas rápidas e escaláveis |
+| RNF08 | **Auditabilidade**: Registro completo de origem, IP, timestamp e contexto | Conformidade regulatória |
 
 ---
 
 ## 📌 Funcionalidades Principais
 
-### **1. Ingestão Assíncrona de Logs**
-Gateway leve que recebe logs e envia imediatamente para uma fila persistente.
+1. **Ingestão Assíncrona de Logs**  
+   Recebimento rápido de logs de ações do usuário via Gateway HTTP, sem impacto na aplicação cliente.
 
-### **2. Persistência Confiável**
-Worker dedicado grava de forma segura e garante integridade do evento.
+2. **Persistência Confiável**  
+   Worker dedicado garante gravação segura e integridade dos eventos.
 
-### **3. Segregação Multi-Persona**
-Cada persona possui suas APIs, tokens e históricos completamente isolados.
+3. **Segregação Multi-Persona**  
+   Histórico de logs isolado por persona, com tokens exclusivos e controle de acesso.
 
-### **4. Dashboard e Consultas Avançadas**
-- busca por filtros complexos  
-- visualização em tabela  
-- gráficos rápidos  
-- ordenação e paginação avançada  
+4. **Consultas Avançadas e Dashboard**  
+   Filtros por persona, usuário, ação, data e contexto; gráficos de métricas e tabelas interativas com paginação.
 
-### **5. Auditoria e Segurança**
-Registros contendo origem, IP, timestamps, nível e contexto do evento.
+5. **Auditoria Completa**  
+   Registro de IP, timestamp, origem da API e detalhes da ação do usuário.
 
-### **6. Exportação de Resultados**
-Logs podem ser exportados para integrações externas.
+6. **Exportação de Logs**  
+   Possibilidade de exportar logs para integração com outros sistemas ou análise offline.
 
-### **7. Alta Performance**
-Capaz de registrar milhares de eventos por segundo sem prejudicar sistemas externos.
-
----
-
+7. **Alta Performance e Escalabilidade**  
+   Suporta milhares de eventos por segundo com processamento assíncrono e workers distribuídos.
