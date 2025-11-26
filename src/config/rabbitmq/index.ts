@@ -1,4 +1,5 @@
 import { connect, type Connection, type Channel, type Message } from "amqplib";
+import type { Log } from "../../contracts/log";
 
 export class RabbitMQServer {
   private conn!: Connection;
@@ -21,17 +22,19 @@ export class RabbitMQServer {
     console.log(`RabbitMQ is running and exchange "${this.exchange}" is ready`);
   }
 
-  async publish(exchange: string, routingKey: string, data: unknown) {
+  async publish(exchange: string, routingKey: string, data: Log) {
     if (!this.channel) {
       throw new Error("RabbitMQ channel not initialized. Call start() first.");
     }
 
-    this.channel.publish(
+    const test = this.channel.publish(
       exchange,
       routingKey,
       Buffer.from(JSON.stringify(data)),
       { persistent: true }
     );
+
+    console.log("Message published to RabbitMQ:", test);
   }
 
   async consume(

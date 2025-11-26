@@ -7,7 +7,7 @@ import { jsonSchemaTransform, jsonSchemaTransformObject, serializerCompiler, val
 import { env } from "./env";
 import { logRoutes } from "./routes/log-routes";
 import { RabbitMQServer } from "./config/rabbitmq";
-import { MongoDBClient } from "./config/mongosdb";
+import { MongoDBClient } from "./config/mongodb";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 

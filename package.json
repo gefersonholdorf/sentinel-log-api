@@ -6,7 +6,8 @@
     "dev": "tsx watch --env-file .env src/index.ts",
     "build": "tsc",
     "start": "node --no-warnings --env-file .env dist/index.js",
-    "rabbit": "tsx --env-file src/config/rabbitmq/consumer.ts"
+    "rabbit-consumer": "tsx --env-file .env src/config/rabbitmq/consumer.ts",
+    "mongo-create-collection": "tsx --env-file .env src/config/mongodb/script-create-collection.ts"
   },
   "keywords": [],
   "author": "",

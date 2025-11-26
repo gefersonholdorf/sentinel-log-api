@@ -1,24 +1,23 @@
 import type { FastifyInstance } from "fastify";
 import { rabbitMQClient } from "../server";
-import z from "zod";
+import z from "zod/v4";
+import type { Log } from "../contracts/log";
 
-const teste = {
-  "id": "abc123xyz",
-  "systemId": "API2",
-  "personaId": "persona123",
-  "userId": "user456",
-  "action": "update",
-  "entity": "cliente",
-  "entityId": "cliente789",
-  "timestamp": "2025-11-25T15:30:00Z",
-  "message": "User updated cliente record",
-  "ip": "203.0.113.42",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-  "requestId": "req_abc123xyz"
-}
+const LogSchema = z.object({
+  systemId: z.string().min(1).max(100),
+  systemName: z.string().min(1).max(200),
+  action: z.enum(["create", "update", "delete", "login", "logout", "view"]),
+  entity: z.string().min(1).max(100),
+  personaId: z.string().min(1).max(100),
+  userId: z.string().min(1).max(100),
+  userName: z.string().min(1).max(200),
+  message: z.string().min(1).max(1000),
+});
+
+type LogInput = z.infer<typeof LogSchema>;
 
 export function logRoutes(app: FastifyInstance) {
-    app.post('/logs', {
+    app.post<{ Body: LogInput }>('/logs', {
         schema: {
             summary: "Submit User Action Logs",
             description: `Endpoint to submit user action logs to SentinelLog. Each log represents an action performed by a user (e.g., create, update, delete, login) on
@@ -27,13 +26,39 @@ export function logRoutes(app: FastifyInstance) {
                 impact on client applications. Only authenticated personas with valid
                 tokens can submit logs for their own resources.`,            
             tags: ["Logs"],
-            body: z.object({
-
-            })
+            body: LogSchema,
+            response: {
+                200: z.object({
+                    status: z.string().describe("Status of the log submission."),
+                }),
+                500: z.object({
+                    message: z.string().describe("Error message indicating the failure reason."),
+                })
+            }
         }
     }, async (request, reply) => {
-        rabbitMQClient.publish('sentinel.exchange', `personaA.logs`, { message: 'New log entry', timestamp: new Date().toISOString() });
+        const ip = request.ip
+        const userAgent = request.headers['user-agent'];
 
-        return reply.send({ status: 'Log entry queued' });
+        const { userName, action, entity, message, personaId, systemId, systemName, userId } = request.body
+
+        const logEntry: Log = {
+            id: crypto.randomUUID(),
+            userName, 
+            userId, 
+            personaId, 
+            systemId, 
+            systemName,
+            action, 
+            entity, 
+            message,
+            date: new Date(),
+            ip,
+            userAgent
+        }
+
+        rabbitMQClient.publish('sentinel.exchange', `personaA.logs`, { ...logEntry});
+
+        return reply.status(200).send({ status: 'Log entry queued' });
     })
 }
