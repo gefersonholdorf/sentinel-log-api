@@ -13,7 +13,11 @@
     "skipLibCheck": true,
     "moduleResolution": "node16",
 
-    "rootDir": "./src/",
-    "outDir": "./dist/"
+    "rootDir": "./src",
+    "outDir": "./dist/",
+
+    "resolveJsonModule": true,
+		"isolatedModules": true,
   },
+  "include": ["src"]
 }

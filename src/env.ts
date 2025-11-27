@@ -6,6 +6,7 @@ const envSchema = z.object({
     JWT_SECRET_KEY: z.string(),
     RABBITMQ_URL: z.url(),
     MONGO_URL: z.url(),
+    DATABASE_URL: z.url()
 })
 
 export const env = envSchema.parse(process.env)

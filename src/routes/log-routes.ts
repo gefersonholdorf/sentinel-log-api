@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { rabbitMQClient } from "../server";
+import { mongoClient, rabbitMQClient } from "../server";
 import z from "zod/v4";
 import type { Log } from "../contracts/log";
 
@@ -43,7 +43,6 @@ export function logRoutes(app: FastifyInstance) {
         const { userName, action, entity, message, personaId, systemId, systemName, userId } = request.body
 
         const logEntry: Log = {
-            id: crypto.randomUUID(),
             userName, 
             userId, 
             personaId, 
@@ -60,5 +59,13 @@ export function logRoutes(app: FastifyInstance) {
         rabbitMQClient.publish('sentinel.exchange', `personaA.logs`, { ...logEntry});
 
         return reply.status(200).send({ status: 'Log entry queued' });
+    })
+
+    app.get('/logs', async (Request, reply) => {
+        const result = await mongoClient.collection('logs').find().toArray()
+        console.log(result)
+        return reply.status(200).send({
+            result
+        })
     })
 }

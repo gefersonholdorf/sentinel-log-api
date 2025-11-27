@@ -8,6 +8,8 @@ import { env } from "./env";
 import { logRoutes } from "./routes/log-routes";
 import { RabbitMQServer } from "./config/rabbitmq";
 import { MongoDBClient } from "./config/mongodb";
+import { clientsRoutes } from "./routes/client-routes";
+import { apiRoutes } from "./routes/api-routes";
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -59,3 +61,5 @@ app.addHook("onReady", async() => {
 })
 
 app.register(logRoutes)
+app.register(clientsRoutes)
+app.register(apiRoutes)

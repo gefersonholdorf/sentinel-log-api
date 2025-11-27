@@ -1,5 +1,4 @@
 export interface Log {
-  id: string
   systemId: string;
   systemName: string;
   action: "create" | "update" | "delete" | "login" | "logout" | "view";

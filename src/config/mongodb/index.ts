@@ -22,7 +22,7 @@ export class MongoDBClient {
         }
     }
 
-    async collection(colletionName: string) {
+    collection(colletionName: string) {
         if (!this.client) {
             throw new Error("MongoDB client not connected. Call connect() first.");
         }
