@@ -68,4 +68,12 @@ export function logRoutes(app: FastifyInstance) {
             result
         })
     })
+
+    app.get('/logs', async (Request, reply) => {
+        const result = await mongoClient.collection('logs').find().toArray()
+        console.log(result)
+        return reply.status(200).send({
+            result
+        })
+    })
 }
